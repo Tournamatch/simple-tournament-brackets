@@ -102,6 +102,7 @@ export const compress = () => {
         "!package.json",
         "!package-lock.json",
         "!*.bat",
+		"!README.md",
     ])
     .pipe(zip(`${info.name}.zip`))
     .pipe(dest('bundled'));
