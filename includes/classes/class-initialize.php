@@ -454,16 +454,37 @@ if ( ! class_exists( 'Initialize' ) ) {
 
 			// Verify there were no blank lines (this is invalid data).
 			if ( count( $lines ) !== count( $competitors ) ) {
-				return false;
+				return __( 'Enter one competitor per line without any blank lines.', 'simple-tournament-brackets' );
 			}
 
 			// Verify total number of competitors is a power of 2, greater than or equal to 4, less than or equal to 256.
 			if ( ! in_array( count( $competitors ), array( 4, 8, 16, 32, 64, 128, 256 ), true ) ) {
-				return false;
+				return __( 'The total number of competitors must be a power of 2 greater than or equal to 4 (4, 8, 16, 32, 64, 128, 256).', 'simple-tournament-brackets' );
 			}
 
 			// Verify list of competitors is unique.
-			return count( $competitors ) === count( array_flip( $competitors ) );
+			if ( count( $competitors ) !== count( array_flip( $competitors ) ) ) {
+				$repeated = array_count_values( $competitors );
+				arsort( $repeated );
+				$repeated = array_filter(
+					$repeated,
+					function( $count ) {
+						return $count > 1;
+					}
+				);
+				$repeated = array_keys( $repeated );
+				return sprintf(
+					_n(
+						'Competitors must be unique. The following competitor appears more than once: %s',
+						'Competitors must be unique. The following competitors appear more than once: %s',
+						count( $repeated ),
+						'simple-tournament-brackets'
+					),
+					implode( ', ', $repeated )
+				);
+			}
+
+			return true;
 		}
 
 		/**
@@ -524,16 +545,18 @@ if ( ! class_exists( 'Initialize' ) ) {
 				exit;
 			}
 
-			$competitors = array();
-			if ( $this->is_valid_competitors( $competitors_text, $competitors ) ) {
+			$is_valid_or_error = $this->is_valid_competitors( $competitors_text, $competitors );
 
+			$competitors = array();
+			if ( true === $is_valid_or_error ) {
 				$match_data = $this->get_match_data( $competitors );
 
 				update_post_meta( $id, 'stb_status', 'in_progress' );
 				update_post_meta( $id, 'stb_competitors', $competitors_text );
 				update_post_meta( $id, 'stb_match_data', $match_data );
 			} else {
-				wp_safe_redirect( admin_url( 'admin.php?page=seed_tournament&id=' . $id . '&_wpnonce=' . wp_create_nonce( 'seed-tournament_' . $id ) . '&stb_error' ) );
+				update_post_meta( $id, 'stb_competitors', $competitors_text );
+				wp_safe_redirect( admin_url( 'admin.php?page=seed_tournament&id=' . $id . '&_wpnonce=' . wp_create_nonce( 'seed-tournament_' . $id ) . '&stb_error=' . urlencode( $is_valid_or_error ) ) );
 				exit;
 			}
 

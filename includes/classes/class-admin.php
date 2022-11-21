@@ -87,7 +87,7 @@ if ( ! class_exists( 'Admin' ) ) {
 		 */
 		public function seed_tournament() {
 			$id    = isset( $_REQUEST['id'] ) ? intval( wp_unslash( $_REQUEST['id'] ) ) : false;
-			$error = isset( $_REQUEST['stb_error'] ) ? true : false;
+			$error = isset( $_REQUEST['stb_error'] ) ? urldecode( wp_unslash( $_REQUEST['stb_error'] ) ) : false;
 
 			check_admin_referer( 'seed-tournament_' . $id );
 
@@ -103,8 +103,7 @@ if ( ! class_exists( 'Admin' ) ) {
 				<?php if ( $error ) : ?>
 				<div class="notice notice-error">
 					<p>
-					<?php esc_html_e( 'Enter one unique competitor name per line.', 'simple-tournament-brackets' ); ?>
-					<?php esc_html_e( 'The total competitors must be a power of 2 greater than 4 (4, 8, 16, 32, 64, 128, 256).', 'simple-tournament-brackets' ); ?>
+						<?php echo esc_html( $error ); ?>
 					</p>
 				</div>
 				<?php endif; ?>
