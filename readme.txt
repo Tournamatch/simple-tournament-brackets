@@ -2,8 +2,8 @@
 Contributors: tournamatch
 Tags: tournament, bracket, bracket-generator, esports
 Requires at least: 4.7
-Tested up to: 5.9.3
-Stable tag: 1.0
+Tested up to: 6.1.1
+Stable tag: 1.0.1
 Requires PHP: 5.6.20
 License: GPLv2
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
@@ -41,6 +41,9 @@ Competitors are seeded in the order entered in the **Competitors** text area box
 5. Easily modify the foreground and background colors for round headers, match, match hover, and the progress bar.
 
 == Changelog ==
+
+= 1.0.1 =
+* Fixed: Round headers appear as undefined when displaying more than one tournament on a single page with different number of rounds.
 
 = 1.0 =
 * The initial release.

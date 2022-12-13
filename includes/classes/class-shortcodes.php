@@ -100,7 +100,7 @@ if ( ! class_exists( 'Shortcodes' ) ) {
 			wp_enqueue_style( 'simple-tournament-brackets-style' );
 			wp_add_inline_style( 'simple-tournament-brackets-style', $inline_css );
 
-			wp_register_script( 'simple-tournament-brackets', plugins_url( '../../js/brackets.js', __FILE__ ), array(), '1.0.0', true );
+			wp_register_script( 'simple-tournament-brackets', plugins_url( '../../js/brackets.js', __FILE__ ), array(), SIMPLE_TOURNAMENT_BRACKETS_VERSION, true );
 			wp_localize_script( 'simple-tournament-brackets', 'simple_tournament_brackets_options', $options );
 			wp_enqueue_script( 'simple-tournament-brackets' );
 
