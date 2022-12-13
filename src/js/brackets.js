@@ -160,14 +160,40 @@
                 return content;
             }
 
+            function filterRounds(origRounds, numberOfRounds) {
+                const rounds = [...origRounds];
+
+                if ( 7 >= numberOfRounds ) {
+                    rounds[4] = null;
+                }
+                if ( 6 >= numberOfRounds ) {
+                    rounds[3] = null;
+                }
+                if ( 5 >= numberOfRounds ) {
+                    rounds[5] = null;
+                }
+                if ( 4 >= numberOfRounds ) {
+                    rounds[2] = null;
+                }
+                if ( 3 >= numberOfRounds ) {
+                    rounds[6] = null;
+                }
+                if ( 2 >= numberOfRounds ) {
+                    rounds[1] = null;
+                }
+
+                return rounds.filter((r) => r !== null);
+            }
+
             function renderBrackets(tournament, container, tournament_id) {
                 let content = ``;
                 let numberOfGames;
                 let matchPaddingCount;
+                let rounds = filterRounds(options.language.rounds, tournament.rounds);
 
                 content += `<div class="simple-tournament-brackets-round-header-container">`;
                 for (let i = 0; i <= tournament.rounds; i++) {
-                    content += `<span class="simple-tournament-brackets-round-header">${options.language.rounds[i]}</span>`;
+                    content += `<span class="simple-tournament-brackets-round-header">${rounds[i]}</span>`;
                 }
                 content += `</div>`;
                 content += renderProgress(calculateProgress(tournament));
