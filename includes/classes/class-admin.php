@@ -43,6 +43,7 @@ if ( ! class_exists( 'Admin' ) ) {
 		private function setup_actions() {
 			add_action( 'admin_menu', array( $this, 'admin_menu' ) );
 			add_action( 'admin_init', array( $this, 'settings_init' ) );
+			add_action( 'admin_enqueue_scripts', array( $this, 'admin_assets' ) );
 
 			add_action( 'add_meta_boxes_stb-tournament', array( $this, 'add_meta_boxes' ) );
 
@@ -94,6 +95,11 @@ if ( ! class_exists( 'Admin' ) ) {
 			);
 		}
 
+		public function admin_assets() {
+            wp_register_style( 'stb_admin_css', plugins_url( '../../css/admin.css', __FILE__ ), false, SIMPLE_TOURNAMENT_BRACKETS_VERSION );
+		    wp_enqueue_style( 'stb_admin_css' );
+        }
+
 		/**
 		 * Displays the form to seed a tournament.
 		 *
@@ -138,11 +144,23 @@ if ( ! class_exists( 'Admin' ) ) {
 								><?php echo esc_html( get_post_meta( $id, 'stb_competitors', true ) ); ?></textarea>
 								<p class="description">
 									<?php esc_html_e( 'Enter one unique competitor name per line.', 'simple-tournament-brackets' ); ?>
-									<?php esc_html_e( 'Competitors are seeded in the order they appear above.', 'simple-tournament-brackets' ); ?>
+									<?php esc_html_e( 'Unless randomized below, competitors are seeded in the order entered above.', 'simple-tournament-brackets' ); ?>
 									<?php esc_html_e( 'The total competitors must be a power of 2 greater than 4 (4, 8, 16, 32, 64, 128, 256).', 'simple-tournament-brackets' ); ?>
 								</p>
 							</td>
 						</tr>
+                        <tr class="form-field">
+                            <th scope="row">
+                                <label for="seeding"><?php esc_html_e( 'Randomize Seeding', 'simple-tournament-brackets' ); ?></label>
+                            </th>
+                            <td>
+                                <label class="stb-slider rounded">
+                                    <input type="checkbox" id="seeding" name="seeding">
+                                    <span class="stb-toggle"></span>
+                                    <span class="stb-text" data-checked-text="<?php esc_html_e( 'Randomize competitor seeding on Start.', 'simple-tournament-brackets' ); ?>" data-unchecked-text="<?php esc_html_e( 'Do not randomize competitor seeding.', 'simple-tournament-brackets' ); ?>"></span>
+                                </label>
+                            </td>
+                        </tr>
 					</table>
 					<p class="submit">
 						<input type="hidden" name="id" value="<?php echo intval( $id ); ?>">

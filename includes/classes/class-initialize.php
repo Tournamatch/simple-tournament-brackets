@@ -493,10 +493,11 @@ if ( ! class_exists( 'Initialize' ) ) {
 		 * @since 1.0.0
 		 *
 		 * @param string[] $competitors Array of competitors by name.
+         * @param string   $seeding Either 'manual' or 'random'
 		 *
 		 * @return mixed Returns match data array.
 		 */
-		private function get_match_data( $competitors ) {
+		private function get_match_data( $competitors, $seeding = 'manual' ) {
 			$competitor_count = count( $competitors );
 
 			if ( ! in_array( $competitor_count, array( 4, 8, 16, 32, 64, 128, 256 ), true ) ) {
@@ -509,6 +510,10 @@ if ( ! class_exists( 'Initialize' ) ) {
 					'name' => $competitors[ $i ],
 				);
 			}
+
+			if ( 'random' === $seeding ) {
+			    shuffle( $competitors );
+            }
 
 			$number_of_rounds    = log( $competitor_count, 2 );
 			$first_round_matches = ( $competitor_count / 2 );
@@ -537,6 +542,7 @@ if ( ! class_exists( 'Initialize' ) ) {
 		public function start_tournament() {
 			$id               = isset( $_REQUEST['id'] ) ? intval( wp_unslash( $_REQUEST['id'] ) ) : false;
 			$competitors_text = isset( $_REQUEST['competitors'] ) ? sanitize_textarea_field( wp_unslash( $_REQUEST['competitors'] ) ) : false;
+			$seeding          = isset( $_REQUEST['seeding'] ) ? (bool) wp_unslash( $_REQUEST['seeding'] ) : false;
 
 			check_admin_referer( 'start-tournament_' . $id );
 
@@ -545,11 +551,13 @@ if ( ! class_exists( 'Initialize' ) ) {
 				exit;
 			}
 
+            $seeding = $seeding ? 'random' : 'manual';
+
 			$is_valid_or_error = $this->is_valid_competitors( $competitors_text, $competitors );
 
 			$competitors = array();
 			if ( true === $is_valid_or_error ) {
-				$match_data = $this->get_match_data( $competitors );
+				$match_data = $this->get_match_data( $competitors, $seeding );
 
 				update_post_meta( $id, 'stb_status', 'in_progress' );
 				update_post_meta( $id, 'stb_competitors', $competitors_text );

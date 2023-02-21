@@ -89,7 +89,7 @@ if ( ! class_exists( 'Shortcodes' ) ) {
 				),
 			);
 
-			$color_options = get_option( 'simple_tournament_brackets_options_' );
+			$color_options = get_option( 'simple_tournament_brackets_options' );
 
 			$inline_css  = '.simple-tournament-brackets-round-header {background: ' . sanitize_hex_color( $color_options['round_background_color'] ) . '; color: ' . sanitize_hex_color( $color_options['round_header_color'] ) . ';}';
 			$inline_css .= '.simple-tournament-brackets-match-body {background: ' . sanitize_hex_color( $color_options['match_background_color'] ) . '; color: ' . sanitize_hex_color( $color_options['match_color'] ) . ';}';

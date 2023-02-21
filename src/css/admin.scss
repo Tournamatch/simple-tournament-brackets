@@ -1,0 +1,73 @@
+.stb-slider {
+  position: relative;
+  display: inline-block;
+  height: 22px;
+
+  /* Hide default HTML checkbox */
+  input {
+    display: none;
+  }
+
+  /* The slider */
+  .stb-toggle {
+    position: absolute;
+    cursor: pointer;
+    top: 0;
+    left: 0;
+    width: 44px;
+    bottom: 0;
+    background-color: #ccc;
+    -webkit-transition: .5s;
+    transition: .5s;
+    box-shadow: none;
+  }
+
+  .stb-toggle:before {
+    position: absolute;
+    content: "";
+    height: 18px;
+    width: 18px;
+    left: 2px;
+    bottom: 2px;
+    background-color: white;
+    -webkit-transition: .5s;
+    transition: .5s;
+  }
+
+  input:checked + .stb-toggle {
+    background-color: #2271b1;
+    -webkit-transition: .5s;
+    transition: .5s;
+  }
+
+  input:checked + .stb-toggle:before {
+    left: unset;
+    right: 2px;
+    -webkit-transition: .5s;
+    transition: .5s;
+  }
+
+  .stb-text:after {
+    content: attr(data-unchecked-text);
+    display: block;
+    position: relative;
+    line-height: 22px;
+    margin-left: 52px;
+    text-align: center;
+    -webkit-transition: .5s;
+    transition: .5s;
+  }
+
+  input:checked ~ .stb-text:after {
+    content: attr(data-checked-text);
+    -webkit-transition: .5s;
+    transition: .5s;
+  }
+
+  &.rounded .stb-toggle {
+    border-radius: 13px;
+  }
+  &.rounded .stb-toggle:before {
+    border-radius: 9px;
+  }
+}
