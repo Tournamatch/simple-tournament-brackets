@@ -433,7 +433,7 @@ if ( ! class_exists( 'Admin' ) ) {
 					echo esc_html( ucwords( str_replace( '_', ' ', get_post_meta( $post_id, $column, true ) ) ) );
 					break;
 				case 'stb_shortcode':
-					echo '<span class="stb-shortcode" style="cursor: pointer;" title="' . esc_html__( 'Click to copy shortcode.', 'simple-tournament-brackets' ) . '">[simple-tournament-brackets tournament_id="' . intval( $post_id ) . '"]</span>';
+					echo '<span class="stb-shortcode stb-tooltip" title="' . esc_html__( 'Click to copy shortcode.', 'simple-tournament-brackets' ) . '"><span class="stb-tooltip-text">' . esc_html__( 'Copied!', 'simple-tournament-brackets' ) . '</span>[simple-tournament-brackets tournament_id="' . intval( $post_id ) . '"]</span>';
 					break;
 			}
 		}

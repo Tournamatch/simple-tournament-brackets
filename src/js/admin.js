@@ -13,6 +13,10 @@
                 } else {
                     unsecuredCopyToClipboard(content);
                 }
+                code.classList.add("show");
+                setTimeout(() => {
+                    code.classList.remove("show");
+                }, 1500);
             });
         }, false);
     });
