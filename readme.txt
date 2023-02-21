@@ -2,8 +2,8 @@
 Contributors: tournamatch
 Tags: tournament, bracket, bracket-generator, esports
 Requires at least: 4.7
-Tested up to: 5.9.3
-Stable tag: 1.0
+Tested up to: 6.1.1
+Stable tag: 1.0.1
 Requires PHP: 5.6.20
 License: GPLv2
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
@@ -32,7 +32,18 @@ After creating a tournament, you must click the **Start** action on the **All To
 
 Competitors are seeded in the order entered in the **Competitors** text area box displayed after clicking **Start**.
 
+== Screenshots ==
+
+1. A 16 competitor tournament. The cursor is hovering over Player7 and the brackets highlight Player7's path through the brackets. Use Simple Tournament Brackets plugin to run 4, 8, 16, 32, 64, 128, or 256 competitor tournaments.
+2. Advance competitors through the brackets by viewing the brackets while authenticated as an admin. Hover the cursor over the gear icon to see the match dropdown menu. 
+3. The WordPress backend **All Tournaments** list. You can find the shortcode for each tournament here as well as the **Start**, **Reset**, and **Finish** actions.
+4. The WordPress backend **Start** tournament screen. Order competitors here to manually seed the tournament.
+5. Easily modify the foreground and background colors for round headers, match, match hover, and the progress bar.
+
 == Changelog ==
+
+= 1.0.1 =
+* Fixed: Round headers appear as undefined when displaying more than one tournament on a single page with different number of rounds.
 
 = 1.0 =
 * The initial release.
