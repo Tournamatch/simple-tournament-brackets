@@ -3,7 +3,7 @@ Contributors: tournamatch
 Tags: tournament, bracket, bracket-generator, esports
 Requires at least: 4.7
 Tested up to: 6.1.1
-Stable tag: 1.0.1
+Stable tag: 1.1.0
 Requires PHP: 5.6.20
 License: GPLv2
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
@@ -41,6 +41,11 @@ Competitors are seeded in the order entered in the **Competitors** text area box
 5. Easily modify the foreground and background colors for round headers, match, match hover, and the progress bar.
 
 == Changelog ==
+
+= 1.1.0 =
+* New: Added support for random bracket seeding.
+* New: Added support for copying shortcode by clicking on the text in the tournament list.
+* Changed: Improved the error message detail when attempting to start a tournament with invalid data.
 
 = 1.0.1 =
 * Fixed: Round headers appear as undefined when displaying more than one tournament on a single page with different number of rounds.
