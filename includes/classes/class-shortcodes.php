@@ -96,7 +96,7 @@ if ( ! class_exists( 'Shortcodes' ) ) {
 			$inline_css .= '.simple-tournament-brackets-competitor-highlight {background: ' . sanitize_hex_color( $color_options['match_background_hover_color'] ) . '; color: ' . sanitize_hex_color( $color_options['match_hover_color'] ) . ';}';
 			$inline_css .= '.simple-tournament-brackets-progress {background: ' . sanitize_hex_color( $color_options['progress_color'] ) . '; }';
 
-			wp_register_style( 'simple-tournament-brackets-style', plugins_url( '../../css/brackets.css', __FILE__ ), array(), '1.0.0' );
+			wp_register_style( 'simple-tournament-brackets-style', plugins_url( '../../css/brackets.css', __FILE__ ), array(), SIMPLE_TOURNAMENT_BRACKETS_VERSION );
 			wp_enqueue_style( 'simple-tournament-brackets-style' );
 			wp_add_inline_style( 'simple-tournament-brackets-style', $inline_css );
 

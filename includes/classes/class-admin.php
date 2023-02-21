@@ -43,7 +43,6 @@ if ( ! class_exists( 'Admin' ) ) {
 		private function setup_actions() {
 			add_action( 'admin_menu', array( $this, 'admin_menu' ) );
 			add_action( 'admin_init', array( $this, 'settings_init' ) );
-			add_action( 'admin_enqueue_scripts', array( $this, 'admin_assets' ) );
 
 			add_action( 'add_meta_boxes_stb-tournament', array( $this, 'add_meta_boxes' ) );
 
@@ -56,6 +55,13 @@ if ( ! class_exists( 'Admin' ) ) {
             add_action( 'admin_enqueue_scripts', array( $this, 'enqueue_scripts' ) );
 		}
 
+        /**
+         * Enqueues admin styles and scripts.
+         *
+         * @since 1.1.0
+         *
+         * @param string $hook_suffix The current admin page.
+         */
 		public function enqueue_scripts( $hook_suffix ) {
             if( in_array( $hook_suffix, array('edit.php' ) ) ){
                 $screen = get_current_screen();
@@ -65,6 +71,9 @@ if ( ! class_exists( 'Admin' ) ) {
                     // Register, enqueue scripts and styles here
                     wp_register_script( 'stb_admin', plugins_url( '../../js/admin.js', __FILE__ ), array(), SIMPLE_TOURNAMENT_BRACKETS_VERSION, true );
                     wp_enqueue_script( 'stb_admin' );
+
+                    wp_register_style( 'stb_admin_css', plugins_url( '../../css/admin.css', __FILE__ ), false, SIMPLE_TOURNAMENT_BRACKETS_VERSION );
+                    wp_enqueue_style( 'stb_admin_css' );
                 }
             }
         }
@@ -94,11 +103,6 @@ if ( ! class_exists( 'Admin' ) ) {
 				array( $this, 'seed_tournament' )
 			);
 		}
-
-		public function admin_assets() {
-            wp_register_style( 'stb_admin_css', plugins_url( '../../css/admin.css', __FILE__ ), false, SIMPLE_TOURNAMENT_BRACKETS_VERSION );
-		    wp_enqueue_style( 'stb_admin_css' );
-        }
 
 		/**
 		 * Displays the form to seed a tournament.
