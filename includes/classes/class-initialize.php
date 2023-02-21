@@ -474,6 +474,7 @@ if ( ! class_exists( 'Initialize' ) ) {
 				);
 				$repeated = array_keys( $repeated );
 				return sprintf(
+					/* translators: A comma separated list of names. */
 					_n(
 						'Competitors must be unique. The following competitor appears more than once: %s',
 						'Competitors must be unique. The following competitors appear more than once: %s',
@@ -493,7 +494,7 @@ if ( ! class_exists( 'Initialize' ) ) {
 		 * @since 1.0.0
 		 *
 		 * @param string[] $competitors Array of competitors by name.
-         * @param string   $seeding Either 'manual' or 'random'
+		 * @param string   $seeding Either 'manual' or 'random'.
 		 *
 		 * @return mixed Returns match data array.
 		 */
@@ -512,8 +513,8 @@ if ( ! class_exists( 'Initialize' ) ) {
 			}
 
 			if ( 'random' === $seeding ) {
-			    shuffle( $competitors );
-            }
+				shuffle( $competitors );
+			}
 
 			$number_of_rounds    = log( $competitor_count, 2 );
 			$first_round_matches = ( $competitor_count / 2 );
@@ -542,7 +543,7 @@ if ( ! class_exists( 'Initialize' ) ) {
 		public function start_tournament() {
 			$id               = isset( $_REQUEST['id'] ) ? intval( wp_unslash( $_REQUEST['id'] ) ) : false;
 			$competitors_text = isset( $_REQUEST['competitors'] ) ? sanitize_textarea_field( wp_unslash( $_REQUEST['competitors'] ) ) : false;
-			$seeding          = isset( $_REQUEST['seeding'] ) ? (bool) wp_unslash( $_REQUEST['seeding'] ) : false;
+			$seeding          = isset( $_REQUEST['seeding'] ) ? boolval( wp_unslash( $_REQUEST['seeding'] ) ) : false;
 
 			check_admin_referer( 'start-tournament_' . $id );
 
@@ -551,7 +552,7 @@ if ( ! class_exists( 'Initialize' ) ) {
 				exit;
 			}
 
-            $seeding = $seeding ? 'random' : 'manual';
+			$seeding = $seeding ? 'random' : 'manual';
 
 			$is_valid_or_error = $this->is_valid_competitors( $competitors_text, $competitors );
 
@@ -565,7 +566,7 @@ if ( ! class_exists( 'Initialize' ) ) {
 			} else {
 				update_post_meta( $id, 'stb_competitors', $competitors_text );
 				$user_id = get_current_user_id();
-				set_transient("stb_start_tournament_{$id}_{$user_id}", $is_valid_or_error, 45);
+				set_transient( "stb_start_tournament_{$id}_{$user_id}", $is_valid_or_error, 45 );
 				wp_safe_redirect( admin_url( 'admin.php?page=seed_tournament&id=' . $id . '&_wpnonce=' . wp_create_nonce( 'seed-tournament_' . $id ) ) );
 				exit;
 			}
