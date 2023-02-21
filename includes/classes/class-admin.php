@@ -52,7 +52,21 @@ if ( ! class_exists( 'Admin' ) ) {
 			add_filter( 'post_row_actions', array( $this, 'set_actions' ), 10, 2 );
 			add_action( 'manage_stb-tournament_posts_custom_column', array( $this, 'columns_values' ), 10, 2 );
 			add_action( 'pre_get_posts', array( $this, 'status_orderby' ) );
+            add_action( 'admin_enqueue_scripts', array( $this, 'enqueue_scripts' ) );
 		}
+
+		public function enqueue_scripts( $hook_suffix ) {
+            if( in_array( $hook_suffix, array('edit.php' ) ) ){
+                $screen = get_current_screen();
+
+                if( is_object( $screen ) && 'stb-tournament' === $screen->post_type ){
+
+                    // Register, enqueue scripts and styles here
+                    wp_register_script( 'stb_admin', plugins_url( '../../js/admin.js', __FILE__ ), array(), SIMPLE_TOURNAMENT_BRACKETS_VERSION, true );
+                    wp_enqueue_script( 'stb_admin' );
+                }
+            }
+        }
 
 		/**
 		 * Creates the admin menu.
@@ -87,7 +101,8 @@ if ( ! class_exists( 'Admin' ) ) {
 		 */
 		public function seed_tournament() {
 			$id    = isset( $_REQUEST['id'] ) ? intval( wp_unslash( $_REQUEST['id'] ) ) : false;
-			$error = isset( $_REQUEST['stb_error'] ) ? urldecode( wp_unslash( $_REQUEST['stb_error'] ) ) : false;
+            $user_id = get_current_user_id();
+            $error = get_transient( "stb_start_tournament_{$id}_{$user_id}");
 
 			check_admin_referer( 'seed-tournament_' . $id );
 
@@ -100,7 +115,8 @@ if ( ! class_exists( 'Admin' ) ) {
 			<div class="wrap">
 				<h1 class="wp-heading-inline"><?php esc_html_e( 'Seed Tournament', 'simple-tournament-brackets' ); ?></h1>
 				<hr class="wp-header-end">
-				<?php if ( $error ) : ?>
+				<?php if ( false !== $error ) : ?>
+                    <?php delete_transient( "stb_start_tournament_{$id}_{$user_id}" ); ?>
 				<div class="notice notice-error">
 					<p>
 						<?php echo esc_html( $error ); ?>
@@ -399,7 +415,7 @@ if ( ! class_exists( 'Admin' ) ) {
 					echo esc_html( ucwords( str_replace( '_', ' ', get_post_meta( $post_id, $column, true ) ) ) );
 					break;
 				case 'stb_shortcode':
-					echo '[simple-tournament-brackets tournament_id="' . intval( $post_id ) . '"]';
+					echo '<span class="stb-shortcode" style="cursor: pointer;" title="' . esc_html__( 'Click to copy shortcode.', 'simple-tournament-brackets' ) . '">[simple-tournament-brackets tournament_id="' . intval( $post_id ) . '"]</span>';
 					break;
 			}
 		}

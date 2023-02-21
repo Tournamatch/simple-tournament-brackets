@@ -44,7 +44,7 @@ export const clean = () => {
 };
 
 export const scripts = () => {
-    return src(['src/js/brackets.js'])
+    return src(['src/js/brackets.js', 'src/js/admin.js'])
         .pipe(named())
         .pipe(webpack({
             module: {

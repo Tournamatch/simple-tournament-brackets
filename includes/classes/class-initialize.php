@@ -556,7 +556,9 @@ if ( ! class_exists( 'Initialize' ) ) {
 				update_post_meta( $id, 'stb_match_data', $match_data );
 			} else {
 				update_post_meta( $id, 'stb_competitors', $competitors_text );
-				wp_safe_redirect( admin_url( 'admin.php?page=seed_tournament&id=' . $id . '&_wpnonce=' . wp_create_nonce( 'seed-tournament_' . $id ) . '&stb_error=' . urlencode( $is_valid_or_error ) ) );
+				$user_id = get_current_user_id();
+				set_transient("stb_start_tournament_{$id}_{$user_id}", $is_valid_or_error, 45);
+				wp_safe_redirect( admin_url( 'admin.php?page=seed_tournament&id=' . $id . '&_wpnonce=' . wp_create_nonce( 'seed-tournament_' . $id ) ) );
 				exit;
 			}
 
