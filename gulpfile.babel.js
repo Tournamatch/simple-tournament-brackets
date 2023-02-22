@@ -18,7 +18,7 @@ import zip from 'gulp-zip';
 const PRODUCTION = yargs.argv.prod;
 
 export const styles = () => {
-  return src(['src/sass/brackets.scss'])
+  return src(['src/css/admin.scss', 'src/css/brackets.scss'])
     .pipe(gulpif(!PRODUCTION, sourcemaps.init()))
     .pipe(sass().on('error', sass.logError))
     .pipe(gulpif(PRODUCTION, postcss([autoprefixer])))
@@ -44,7 +44,7 @@ export const clean = () => {
 };
 
 export const scripts = () => {
-    return src(['src/js/brackets.js'])
+    return src(['src/js/brackets.js', 'src/js/admin.js'])
         .pipe(named())
         .pipe(webpack({
             module: {
@@ -84,7 +84,7 @@ export const pot = () => {
 };
 
 export const watchForChanges = () => {
-    watch('src/scss/**/*.scss', styles);
+    watch('src/css/**/*.scss', styles);
     watch('src/images/**/*.{jpg,jpeg,png,svg,gif}', images);
     //watch(['src/**/*','!src/{images,js,scss}','!src/{images,js,scss}/**/*'], copy);
     watch('src/js/**/*.js', scripts);

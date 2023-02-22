@@ -52,6 +52,30 @@ if ( ! class_exists( 'Admin' ) ) {
 			add_filter( 'post_row_actions', array( $this, 'set_actions' ), 10, 2 );
 			add_action( 'manage_stb-tournament_posts_custom_column', array( $this, 'columns_values' ), 10, 2 );
 			add_action( 'pre_get_posts', array( $this, 'status_orderby' ) );
+			add_action( 'admin_enqueue_scripts', array( $this, 'enqueue_scripts' ) );
+		}
+
+		/**
+		 * Enqueues admin styles and scripts.
+		 *
+		 * @since 1.1.0
+		 *
+		 * @param string $hook_suffix The current admin page.
+		 */
+		public function enqueue_scripts( $hook_suffix ) {
+			if ( 'edit.php' === $hook_suffix ) {
+				$screen = get_current_screen();
+
+				if ( is_object( $screen ) && 'stb-tournament' === $screen->post_type ) {
+
+					// Register, enqueue scripts and styles here.
+					wp_register_script( 'stb_admin', plugins_url( '../../js/admin.js', __FILE__ ), array(), SIMPLE_TOURNAMENT_BRACKETS_VERSION, true );
+					wp_enqueue_script( 'stb_admin' );
+
+					wp_register_style( 'stb_admin_css', plugins_url( '../../css/admin.css', __FILE__ ), false, SIMPLE_TOURNAMENT_BRACKETS_VERSION );
+					wp_enqueue_style( 'stb_admin_css' );
+				}
+			}
 		}
 
 		/**
@@ -86,8 +110,9 @@ if ( ! class_exists( 'Admin' ) ) {
 		 * @since 1.0.0
 		 */
 		public function seed_tournament() {
-			$id    = isset( $_REQUEST['id'] ) ? intval( wp_unslash( $_REQUEST['id'] ) ) : false;
-			$error = isset( $_REQUEST['stb_error'] ) ? true : false;
+			$id      = isset( $_REQUEST['id'] ) ? intval( wp_unslash( $_REQUEST['id'] ) ) : false;
+			$user_id = get_current_user_id();
+			$error   = get_transient( "stb_start_tournament_{$id}_{$user_id}" );
 
 			check_admin_referer( 'seed-tournament_' . $id );
 
@@ -100,11 +125,11 @@ if ( ! class_exists( 'Admin' ) ) {
 			<div class="wrap">
 				<h1 class="wp-heading-inline"><?php esc_html_e( 'Seed Tournament', 'simple-tournament-brackets' ); ?></h1>
 				<hr class="wp-header-end">
-				<?php if ( $error ) : ?>
+				<?php if ( false !== $error ) : ?>
+					<?php delete_transient( "stb_start_tournament_{$id}_{$user_id}" ); ?>
 				<div class="notice notice-error">
 					<p>
-					<?php esc_html_e( 'Enter one unique competitor name per line.', 'simple-tournament-brackets' ); ?>
-					<?php esc_html_e( 'The total competitors must be a power of 2 greater than 4 (4, 8, 16, 32, 64, 128, 256).', 'simple-tournament-brackets' ); ?>
+						<?php echo esc_html( $error ); ?>
 					</p>
 				</div>
 				<?php endif; ?>
@@ -123,9 +148,21 @@ if ( ! class_exists( 'Admin' ) ) {
 								><?php echo esc_html( get_post_meta( $id, 'stb_competitors', true ) ); ?></textarea>
 								<p class="description">
 									<?php esc_html_e( 'Enter one unique competitor name per line.', 'simple-tournament-brackets' ); ?>
-									<?php esc_html_e( 'Competitors are seeded in the order they appear above.', 'simple-tournament-brackets' ); ?>
+									<?php esc_html_e( 'Unless randomized below, competitors are seeded in the order entered above.', 'simple-tournament-brackets' ); ?>
 									<?php esc_html_e( 'The total competitors must be a power of 2 greater than 4 (4, 8, 16, 32, 64, 128, 256).', 'simple-tournament-brackets' ); ?>
 								</p>
+							</td>
+						</tr>
+						<tr class="form-field">
+							<th scope="row">
+								<label for="seeding"><?php esc_html_e( 'Randomize Seeding', 'simple-tournament-brackets' ); ?></label>
+							</th>
+							<td>
+								<label class="stb-slider rounded">
+									<input type="checkbox" id="seeding" name="seeding">
+									<span class="stb-toggle"></span>
+									<span class="stb-text" data-checked-text="<?php esc_html_e( 'Randomize competitor seeding on Start.', 'simple-tournament-brackets' ); ?>" data-unchecked-text="<?php esc_html_e( 'Do not randomize competitor seeding.', 'simple-tournament-brackets' ); ?>"></span>
+								</label>
 							</td>
 						</tr>
 					</table>
@@ -400,7 +437,7 @@ if ( ! class_exists( 'Admin' ) ) {
 					echo esc_html( ucwords( str_replace( '_', ' ', get_post_meta( $post_id, $column, true ) ) ) );
 					break;
 				case 'stb_shortcode':
-					echo '[simple-tournament-brackets tournament_id="' . intval( $post_id ) . '"]';
+					echo '<span class="stb-shortcode stb-tooltip" title="' . esc_html__( 'Click to copy shortcode.', 'simple-tournament-brackets' ) . '"><span class="stb-tooltip-text">' . esc_html__( 'Copied!', 'simple-tournament-brackets' ) . '</span>[simple-tournament-brackets tournament_id="' . intval( $post_id ) . '"]</span>';
 					break;
 			}
 		}

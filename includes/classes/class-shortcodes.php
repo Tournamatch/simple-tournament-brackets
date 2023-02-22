@@ -74,27 +74,6 @@ if ( ! class_exists( 'Shortcodes' ) ) {
 				8 => esc_html__( 'Winner', 'simple-tournament-brackets' ),
 			);
 
-			$match_data = get_post_meta( $attributes['tournament_id'], 'stb_match_data', true );
-
-			if ( 7 >= $match_data['rounds'] ) {
-				unset( $round_language[4] );
-			}
-			if ( 6 >= $match_data['rounds'] ) {
-				unset( $round_language[3] );
-			}
-			if ( 5 >= $match_data['rounds'] ) {
-				unset( $round_language[5] );
-			}
-			if ( 4 >= $match_data['rounds'] ) {
-				unset( $round_language[2] );
-			}
-			if ( 3 >= $match_data['rounds'] ) {
-				unset( $round_language[6] );
-			}
-			if ( 2 >= $match_data['rounds'] ) {
-				unset( $round_language[1] );
-			}
-
 			$round_language = array_values( $round_language );
 
 			$options = array(
@@ -117,11 +96,11 @@ if ( ! class_exists( 'Shortcodes' ) ) {
 			$inline_css .= '.simple-tournament-brackets-competitor-highlight {background: ' . sanitize_hex_color( $color_options['match_background_hover_color'] ) . '; color: ' . sanitize_hex_color( $color_options['match_hover_color'] ) . ';}';
 			$inline_css .= '.simple-tournament-brackets-progress {background: ' . sanitize_hex_color( $color_options['progress_color'] ) . '; }';
 
-			wp_register_style( 'simple-tournament-brackets-style', plugins_url( '../../css/brackets.css', __FILE__ ), array(), '1.0.0' );
+			wp_register_style( 'simple-tournament-brackets-style', plugins_url( '../../css/brackets.css', __FILE__ ), array(), SIMPLE_TOURNAMENT_BRACKETS_VERSION );
 			wp_enqueue_style( 'simple-tournament-brackets-style' );
 			wp_add_inline_style( 'simple-tournament-brackets-style', $inline_css );
 
-			wp_register_script( 'simple-tournament-brackets', plugins_url( '../../js/brackets.js', __FILE__ ), array(), '1.0.0', true );
+			wp_register_script( 'simple-tournament-brackets', plugins_url( '../../js/brackets.js', __FILE__ ), array(), SIMPLE_TOURNAMENT_BRACKETS_VERSION, true );
 			wp_localize_script( 'simple-tournament-brackets', 'simple_tournament_brackets_options', $options );
 			wp_enqueue_script( 'simple-tournament-brackets' );
 
