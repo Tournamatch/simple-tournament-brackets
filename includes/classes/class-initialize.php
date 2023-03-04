@@ -556,7 +556,6 @@ if ( ! class_exists( 'Initialize' ) ) {
 
 			$is_valid_or_error = $this->is_valid_competitors( $competitors_text, $competitors );
 
-			$competitors = array();
 			if ( true === $is_valid_or_error ) {
 				$match_data = $this->get_match_data( $competitors, $seeding );
 

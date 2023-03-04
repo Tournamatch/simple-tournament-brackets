@@ -11,7 +11,7 @@
  * Plugin Name: Simple Tournament Brackets
  * Plugin URI: https://www.tournamatch.com/
  * Description: Manage tournaments with a simple easy to use interface on your website.
- * Version: 1.1.0
+ * Version: 1.1.1
  * Author: Tournamatch
  * Author URI: https://www.tournamatch.com
  * License: Free
@@ -21,7 +21,7 @@
 defined( 'ABSPATH' ) || exit;
 
 if ( ! defined( 'SIMPLE_TOURNAMENT_BRACKETS_VERSION' ) ) {
-	define( 'SIMPLE_TOURNAMENT_BRACKETS_VERSION', '1.1.0' );
+	define( 'SIMPLE_TOURNAMENT_BRACKETS_VERSION', '1.1.1' );
 }
 
 if ( ! defined( '__STBPATH' ) ) {
