@@ -18,7 +18,7 @@ import zip from 'gulp-zip';
 const PRODUCTION = yargs.argv.prod;
 
 export const styles = () => {
-  return src(['src/css/admin.scss', 'src/css/brackets.scss'])
+  return src(['src/css/admin.scss', 'src/css/main.scss'])
     .pipe(gulpif(!PRODUCTION, sourcemaps.init()))
     .pipe(sass().on('error', sass.logError))
     .pipe(gulpif(PRODUCTION, postcss([autoprefixer])))

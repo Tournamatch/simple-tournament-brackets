@@ -16,7 +16,7 @@
         return fetch(`${options.site_url}/wp-json/wp/v2/stb-tournament/${tournament_id}`, {
             headers: {"Content-Type": "application/json; charset=utf-8"},
         })
-            .then(response => response.json());
+        .then(response => response.json());
     }
 
     function clear(tournament_id, match_id) {
@@ -31,7 +31,7 @@
                 tournament_id: tournament_id,
             })
         })
-            .then(response => response.json());
+        .then(response => response.json());
     }
 
     function advance(tournament_id, match_id, winner_id) {
@@ -46,13 +46,144 @@
                 tournament_id: tournament_id,
                 winner_id: winner_id,
             })
-        })
-            .then(response => response.json());
+        });
+        //.then(response => response.json());
     }
 
     window.addEventListener(
         'load',
         function () {
+
+            function createElement(element, attribute, inner) {
+                if (typeof(element) === "undefined") {
+                    return false;
+                }
+                if (typeof(inner) === "undefined") {
+                    inner = "";
+                }
+                var el = document.createElement(element);
+                if (typeof(attribute) === 'object') {
+                    for (var key in attribute) {
+                        el.setAttribute(key, attribute[key]);
+                    }
+                }
+                if (!Array.isArray(inner)) {
+                    inner = [inner];
+                }
+                for (var k = 0; k < inner.length; k++) {
+                    if (inner[k].tagName) {
+                        el.appendChild(inner[k]);
+                    } else {
+                        el.appendChild(document.createTextNode(inner[k]));
+                    }
+                }
+                return el;
+            }
+
+            function createModal(id, title) {
+                const body = createElement('div', {class: 'simple-tournament-brackets-modal-body'});
+
+                const tabStrip = createElement('ul', {id: 'simple-tournament-brackets-modal-navigation', role: 'tablist', 'aria-label': 'Match Details Tabs'});
+                const tabContent = createElement('div', {id: 'simple-tournament-brackets-modal-content'});
+
+                body.appendChild(tabStrip);
+                body.appendChild(tabContent);
+
+                const addTab = function(title, content, name) {
+                    const tabStrip = document.getElementById(`simple-tournament-brackets-modal-navigation`);
+                    const tabContent = document.getElementById(`simple-tournament-brackets-modal-content`);
+                    const contentTarget = createElement(
+                        'div',
+                        {
+                            id: `panel-${name}`,
+                            role: 'tabpanel',
+                            tabindex: 0,
+                            'aria-labelledby': `tab-${name}`
+                        },
+                        content
+                    );
+
+                    if (tabStrip && tabContent) {
+                        tabStrip.appendChild(
+                            createElement(
+                                'li',
+                                {
+                                    id: `tab-${name}`,
+                                    role: 'tab',
+                                    'aria-selected': 'false',
+                                    'aria-controls': `panel-${name}`,
+                                    tabindex: -1
+                                },
+                                title
+                            )
+                        );
+                        tabContent.appendChild(contentTarget);
+                    }
+
+                    return contentTarget;
+                };
+
+                const close = createElement(
+                    'span',
+                    {
+                        class: 'simple-tournament-brackets-modal-close',
+                        'aria-label': 'Close',
+                        'aria-hidden': true,
+                    },
+                    '\u00d7'
+                );
+                const modal = createElement(
+                    'div',
+                    {
+                        id: id,
+                        class: 'simple-tournament-brackets-modal',
+                        style: 'display: none',
+                    },
+                    createElement(
+                        'div',
+                        {
+                            class: 'simple-tournament-brackets-modal-dialog',
+                        },
+                        createElement(
+                            'div',
+                            {
+                                class: 'simple-tournament-brackets-modal-content',
+                            },
+                            [
+                                createElement(
+                                    'div',
+                                    {
+                                        class: 'simple-tournament-brackets-modal-header',
+                                    },
+                                    [
+                                        createElement(
+                                            'h3',
+                                            {
+                                                class: 'simple-tournament-brackets-modal-title',
+                                            },
+                                            title
+                                        ),
+                                        close
+                                    ]
+                                ),
+                                body
+                            ]
+                        )
+                    )
+                );
+
+                window.addEventListener('click', (event) => {
+                    if (event.target === modal) {
+                        modal.style.display = "none";
+                    }
+                });
+
+                close.addEventListener('click', () => {
+                    modal.style.display = "none";
+                });
+
+                return {modal, body, addTab}
+            }
 
             function competitorMouseOver(event) {
                 const className = `competitor-${event.target.dataset.competitorId}`;
@@ -98,14 +229,16 @@
                 if (tournament.matches[match_id] && ((tournament.matches[match_id].one_id !== null) || (tournament.matches[match_id].two_id !== null))) {
                     content += `<div class="dropdown">`;
                     content += `<span class="more-details dashicons dashicons-admin-generic"></span>`;
-                    content += `<div class="dropdown-content" >`;
+                    content += `<div class="dropdown-content" data-match-id="${match_id}">`;
                     if (tournament.matches[match_id] && tournament.matches[match_id].one_id !== null) {
                         const one_id = tournament.matches[match_id].one_id;
-                        content += `<a href="#" class="advance-competitor" data-tournament-id="${tournament_id}" data-match-id="${match_id}" data-competitor-id="${one_id}">${options.language.advance.replace('{NAME}', tournament.competitors[one_id].name)}</a>`;
+                        const one_name = tournament.competitors[one_id].name;
+                        content += `<a href="#" class="advance-competitor" data-tournament-id="${tournament_id}" data-match-id="${match_id}" data-competitor-id="${one_id}" data-competitor-name="${one_name}">${options.language.advance.replace('{NAME}', one_name)}</a>`;
                     }
                     if (tournament.matches[match_id] && tournament.matches[match_id].two_id !== null) {
                         const two_id = tournament.matches[match_id].two_id;
-                        content += `<a href="#" class="advance-competitor" data-tournament-id="${tournament_id}" data-match-id="${match_id}" data-competitor-id="${two_id}">${options.language.advance.replace('{NAME}', tournament.competitors[two_id].name)}</a>`;
+                        const two_name = tournament.competitors[two_id].name;
+                        content += `<a href="#" class="advance-competitor" data-tournament-id="${tournament_id}" data-match-id="${match_id}" data-competitor-id="${two_id}" data-competitor-name="${two_name}">${options.language.advance.replace('{NAME}', two_name)}</a>`;
                     }
                     if ( !is_first_round) {
                         content += `<a href="#" class="clear-competitors" data-tournament-id="${tournament_id}" data-match-id="${match_id}">${options.language.clear}</a>`;
@@ -122,7 +255,7 @@
                 let content = ``;
                 content += `<div class="simple-tournament-brackets-match">`;
                 content += `<div class="horizontal-line"></div>`;
-                content += `<div class="simple-tournament-brackets-match-body">`;
+                content += `<div class="simple-tournament-brackets-match-body" data-match-id="${match_id}">`;
 
                 if (tournament.matches[match_id] && tournament.matches[match_id].one_id !== null) {
                     const one_id = tournament.matches[match_id].one_id;
@@ -300,6 +433,16 @@
                         get_competitors(item.dataset.tournamentId)
                             .then((response) => {
                                 renderBrackets(response.stb_match_data, item, item.dataset.tournamentId);
+
+                                const doneEvent = new CustomEvent("brackets.done", {
+                                    bubbles: true,
+                                    detail: {
+                                        tournamentId: item.dataset.tournamentId,
+                                        tournamentData: response,
+                                    }
+                                });
+
+                                item.dispatchEvent(doneEvent);
                             });
                     }
                 );
