@@ -505,15 +505,15 @@ if ( ! class_exists( 'Initialize' ) ) {
 				return null;
 			}
 
+			if ( 'random' === $seeding ) {
+				shuffle( $competitors );
+			}
+
 			for ( $i = 0; $i < $competitor_count; $i++ ) {
 				$competitors[ $i ] = array(
 					'id'   => $i,
 					'name' => $competitors[ $i ],
 				);
-			}
-
-			if ( 'random' === $seeding ) {
-				shuffle( $competitors );
 			}
 
 			$number_of_rounds    = log( $competitor_count, 2 );
