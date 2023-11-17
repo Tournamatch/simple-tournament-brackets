@@ -2,8 +2,8 @@
 Contributors: tournamatch
 Tags: tournament, bracket, bracket-generator, esports
 Requires at least: 4.7
-Tested up to: 6.1.1
-Stable tag: 1.1.1
+Tested up to: 6.4.1
+Stable tag: 1.1.2
 Requires PHP: 5.6.20
 License: GPLv2
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
@@ -42,8 +42,11 @@ Competitors are seeded in the order entered in the **Competitors** text area box
 
 == Changelog ==
 
+= 1.1.2 =
+* Fixed: Matches do not advanced when seeded randomly.
+
 = 1.1.1 =
-* Fixed: Blank tournament brackets for new tournaments after 1.10 release.
+* Fixed: Blank tournament brackets for new tournaments after 1.1.0 release.
 
 = 1.1.0 =
 * New: Added support for random bracket seeding.
