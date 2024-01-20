@@ -11,6 +11,10 @@
 namespace SimpleTournamentBrackets;
 
 // Exit if accessed directly.
+use SimpleTournamentBrackets\Validations\Competitor_Count;
+use SimpleTournamentBrackets\Validations\Unique_Competitors;
+use SimpleTournamentBrackets\Validations\Validation;
+
 defined( 'ABSPATH' ) || exit;
 
 if ( ! class_exists( 'Initialize' ) ) {
@@ -353,21 +357,7 @@ if ( ! class_exists( 'Initialize' ) ) {
 					return new \WP_Error( 'rest_custom_error', esc_html__( 'Invalid winner id for the match.', 'simple-tournament-brackets' ), array( 'status' => 409 ) );
 				}
 
-				$current_round_matches = count( $competitors ) / 2;
-				$total_rounds          = $match_data['rounds'];
-				$match_count           = 0;
-				$next_spots            = array();
-
-				for ( $round = 0; $round < $total_rounds; $round++ ) {
-
-					for ( $spot = 0; $spot < $current_round_matches; $spot++ ) {
-						$next_spots[ $spot + $match_count ] = (int) ( $match_count + $current_round_matches + floor( $spot / 2 ) );
-					}
-
-					$match_count          += $current_round_matches;
-					$current_round_matches = $current_round_matches / 2;
-				}
-
+				$next_spots    = stb_calculate_next_spots( count( $competitors ) );
 				$next_match_id = $next_spots[ $match_id ];
 				$side          = ( $match_id % 2 ) ? 'two_id' : 'one_id';
 
@@ -376,10 +366,13 @@ if ( ! class_exists( 'Initialize' ) ) {
 						'id'     => $next_match_id,
 						'one_id' => null,
 						'two_id' => null,
+						'status' => 'undetermined',
 					);
 
 					if ( ! isset( $matches[ $next_match_id ] ) ) {
 						$matches[ $next_match_id ] = $new_match;
+					} else {
+						$matches[ $next_match_id ]['status'] = 'scheduled';
 					}
 
 					$matches[ $next_match_id ][ $side ] = $winner_id;
@@ -457,32 +450,21 @@ if ( ! class_exists( 'Initialize' ) ) {
 				return __( 'Enter one competitor per line without any blank lines.', 'simple-tournament-brackets' );
 			}
 
-			// Verify total number of competitors is a power of 2, greater than or equal to 4, less than or equal to 256.
-			if ( ! in_array( count( $competitors ), array( 4, 8, 16, 32, 64, 128, 256 ), true ) ) {
-				return __( 'The total number of competitors must be a power of 2 greater than or equal to 4 (4, 8, 16, 32, 64, 128, 256).', 'simple-tournament-brackets' );
-			}
+			$validations = array(
+				new Competitor_Count( $competitors ),
+				new Unique_Competitors( $competitors ),
+			);
 
-			// Verify list of competitors is unique.
-			if ( count( $competitors ) !== count( array_flip( $competitors ) ) ) {
-				$repeated = array_count_values( $competitors );
-				arsort( $repeated );
-				$repeated = array_filter(
-					$repeated,
-					function( $count ) {
-						return $count > 1;
+			$validations = apply_filters( 'stb_competitors_validations', $validations );
+
+			foreach ( $validations as $validation ) {
+				if ( $validation instanceof Validation ) {
+					if ( ! $validation->passes() ) {
+						return $validation->failure_message();
 					}
-				);
-				$repeated = array_keys( $repeated );
-				return sprintf(
-					/* translators: A comma separated list of names. */
-					_n(
-						'Competitors must be unique. The following competitor appears more than once: %s',
-						'Competitors must be unique. The following competitors appear more than once: %s',
-						count( $repeated ),
-						'simple-tournament-brackets'
-					),
-					implode( ', ', $repeated )
-				);
+				} else {
+					return __( 'Given validation rule is not instance of SimpleTournamentBrackets\Validation.', 'simple-tournament-brackets' );
+				}
 			}
 
 			return true;
@@ -501,8 +483,8 @@ if ( ! class_exists( 'Initialize' ) ) {
 		private function get_match_data( $competitors, $seeding = 'manual' ) {
 			$competitor_count = count( $competitors );
 
-			if ( ! in_array( $competitor_count, array( 4, 8, 16, 32, 64, 128, 256 ), true ) ) {
-				return null;
+			if ( 'random' === $seeding ) {
+				shuffle( $competitors );
 			}
 
 			for ( $i = 0; $i < $competitor_count; $i++ ) {
@@ -512,27 +494,30 @@ if ( ! class_exists( 'Initialize' ) ) {
 				);
 			}
 
-			if ( 'random' === $seeding ) {
-				shuffle( $competitors );
-			}
+			if ( in_array( $competitor_count, array( 4, 8, 16, 32, 64, 128, 256 ), true ) ) {
+				$number_of_rounds    = log( $competitor_count, 2 );
+				$first_round_matches = ( $competitor_count / 2 );
 
-			$number_of_rounds    = log( $competitor_count, 2 );
-			$first_round_matches = ( $competitor_count / 2 );
+				$matches = array();
+				for ( $i = 0; $i < $first_round_matches; $i++ ) {
+					$matches[] = array(
+						'id'     => $i,
+						'one_id' => $i * 2,
+						'two_id' => ( $i * 2 ) + 1,
+						'status' => 'scheduled',
+					);
+				}
 
-			$matches = array();
-			for ( $i = 0; $i < $first_round_matches; $i++ ) {
-				$matches[] = array(
-					'id'     => $i,
-					'one_id' => $i * 2,
-					'two_id' => ( $i * 2 ) + 1,
+				return array(
+					'rounds'      => $number_of_rounds,
+					'competitors' => $competitors,
+					'matches'     => $matches,
 				);
-			}
+			} else {
+				$match_data = apply_filters( 'stb_filter_match_data', null, $competitors );
 
-			return array(
-				'rounds'      => $number_of_rounds,
-				'competitors' => $competitors,
-				'matches'     => $matches,
-			);
+				return $match_data;
+			}
 		}
 
 		/**
@@ -562,6 +547,8 @@ if ( ! class_exists( 'Initialize' ) ) {
 				update_post_meta( $id, 'stb_status', 'in_progress' );
 				update_post_meta( $id, 'stb_competitors', $competitors_text );
 				update_post_meta( $id, 'stb_match_data', $match_data );
+
+				do_action( 'stb_post_tournament_initialize', $id );
 			} else {
 				update_post_meta( $id, 'stb_competitors', $competitors_text );
 				$user_id = get_current_user_id();

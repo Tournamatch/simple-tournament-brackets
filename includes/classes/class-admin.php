@@ -105,6 +105,23 @@ if ( ! class_exists( 'Admin' ) ) {
 		}
 
 		/**
+		 * Returns an array of seed notes used in several locations.
+		 *
+		 * @since 1.2.0
+		 *
+		 * @return array
+		 */
+		private function seed_tournament_notes() {
+			$notes = array(
+				'one per line' => __( 'Enter one unique competitor name per line.', 'simple-tournament-brackets' ),
+				'random'       => __( 'Unless randomized below, competitors are seeded in the order entered above.', 'simple-tournament-brackets' ),
+				'power of 2'   => __( 'The total competitors must be a power of 2 greater than 4 (4, 8, 16, 32, 64, 128, 256).', 'simple-tournament-brackets' ),
+			);
+
+			return apply_filters( 'stb_filter_seed_tournament_notes', $notes );
+		}
+
+		/**
 		 * Displays the form to seed a tournament.
 		 *
 		 * @since 1.0.0
@@ -120,6 +137,8 @@ if ( ! class_exists( 'Admin' ) ) {
 				wp_safe_redirect( admin_url( 'edit.php?post_type=stb-tournament' ) );
 				exit;
 			}
+
+			$seed_notes = $this->seed_tournament_notes();
 
 			?>
 			<div class="wrap">
@@ -146,11 +165,9 @@ if ( ! class_exists( 'Admin' ) ) {
 									rows="16"
 									placeholder="<?php esc_html_e( 'Enter one competitor per line.', 'simple-tournament-brackets' ); ?>"
 								><?php echo esc_html( get_post_meta( $id, 'stb_competitors', true ) ); ?></textarea>
-								<p class="description">
-									<?php esc_html_e( 'Enter one unique competitor name per line.', 'simple-tournament-brackets' ); ?>
-									<?php esc_html_e( 'Unless randomized below, competitors are seeded in the order entered above.', 'simple-tournament-brackets' ); ?>
-									<?php esc_html_e( 'The total competitors must be a power of 2 greater than 4 (4, 8, 16, 32, 64, 128, 256).', 'simple-tournament-brackets' ); ?>
-								</p>
+								<?php if ( 0 < count( $seed_notes ) ) : ?>
+									<p class="description"><?php echo wp_kses_post( implode( ' ', $seed_notes ) ); ?></p>
+								<?php endif; ?>
 							</td>
 						</tr>
 						<tr class="form-field">
@@ -327,7 +344,7 @@ if ( ! class_exists( 'Admin' ) ) {
 			// Retrieve list of competitors to display.
 			$competitors = get_post_meta( $post->ID, 'stb_competitors', true );
 			$status      = get_post_meta( $post->ID, 'stb_status', true );
-
+			$seed_notes  = $this->seed_tournament_notes();
 			?>
 			<span class="stb-meta-box-title">
 				<label for="stb_competitors"><?php esc_html_e( 'Competitors', 'simple-tournament-brackets' ); ?></label>
@@ -341,7 +358,9 @@ if ( ! class_exists( 'Admin' ) ) {
 						<?php echo ( 'open' === $status ) ? '' : 'disabled'; ?>
 						placeholder="<?php esc_html_e( 'Enter one competitor per line.', 'simple-tournament-brackets' ); ?>"
 				><?php echo isset( $competitors ) ? esc_html( $competitors ) : ''; ?></textarea>
-				<p class="description"><?php esc_html_e( 'Enter one competitor per line. Competitors are seeded in the order they appear above.', 'simple-tournament-brackets' ); ?></p>
+				<?php if ( 0 < count( $seed_notes ) ) : ?>
+					<p class="description"><?php echo wp_kses_post( implode( ' ', $seed_notes ) ); ?></p>
+				<?php endif; ?>
 			</div>
 			<?php
 		}

@@ -1,7 +1,6 @@
 // https://css-tricks.com/gulp-for-wordpress-creating-the-tasks/
 import { src, dest, watch, series, parallel } from 'gulp';
 import yargs from 'yargs';
-import sass from 'gulp-sass';
 import cleanCss from 'gulp-clean-css';
 import gulpif from 'gulp-if';
 import postcss from 'gulp-postcss';
@@ -16,6 +15,7 @@ import wpPot from 'gulp-wp-pot';
 import zip from 'gulp-zip';
 
 const PRODUCTION = yargs.argv.prod;
+const sass = require('gulp-sass')(require('sass'));
 
 export const styles = () => {
   return src(['src/css/admin.scss', 'src/css/main.scss'])
@@ -33,11 +33,10 @@ export const images = () => {
         .pipe(dest('images'));
 };
 
-// No need for this one.
-// export const copy = () => {
-//     return src(['src/**/*','!src/{images,js,scss}','!src/{images,js,scss}/**/*'])
-//         .pipe(dest('dist'));
-// };
+export const copy = () => {
+    return src(['src/**/*','!src/{images,js,scss}','!src/{images,js,scss}/**/*'])
+        .pipe(dest('dist'));
+};
 
 export const clean = () => {
     return del(['css/**/*', 'images/**/*', 'js/**/*']);

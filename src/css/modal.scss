@@ -15,19 +15,20 @@
   }
 
   &-modal-dialog {
-    position: relative;
-    width: auto;
-    margin: 0.5rem;
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%) !important;
+    width: calc(100vw - 4rem);
+    margin: 0;
     pointer-events: none;
     box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2), 0 6px 20px 0 rgba(0, 0, 0, 0.19);
   }
 
   @media (min-width: 576px) {
     &-modal-dialog {
-      max-width: 500px;
+      width: 500px;
       margin: 1.75rem auto;
-      margin-top: 100px;
-
     }
   }
 
@@ -42,6 +43,14 @@
     border: 1px solid rgba(0, 0, 0, .2);
     border-radius: 0.3rem;
     outline: 0;
+
+    [role="tabpanel"] {
+      display: none;
+
+      &.active {
+        display: block;
+      }
+    }
   }
 
   &-modal-header {
@@ -75,12 +84,34 @@
     float: right;
     font-size: 28px;
     font-weight: bold;
+    position: absolute;
+    right: 13px;
+    z-index: 1;
 
     &:hover,
     &:focus {
       color: black;
       text-decoration: none;
       cursor: pointer;
+    }
+  }
+
+  &-modal-body ul[role="tablist"] {
+    list-style: none;
+    padding: 0;
+    margin: 0 0 10px 0;
+    border: 0 solid #dee2e6;
+    border-bottom-width: 2px;
+
+    & li[role="tab"] {
+      display: inline-block;
+      margin: 0 5px 0 0;
+      padding: 0 10px;
+      cursor: pointer;
+
+      &.active {
+        box-shadow: 0 2px 0 0 #ff4200;
+      }
     }
   }
 }

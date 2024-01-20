@@ -12,7 +12,7 @@
 
     const options = simple_tournament_brackets_options;
 
-    function get_competitors(tournament_id) {
+    function getCompetitors(tournament_id) {
         return fetch(`${options.site_url}/wp-json/wp/v2/stb-tournament/${tournament_id}`, {
             headers: {"Content-Type": "application/json; charset=utf-8"},
         })
@@ -46,13 +46,14 @@
                 tournament_id: tournament_id,
                 winner_id: winner_id,
             })
-        });
-        //.then(response => response.json());
+        })
+        .then(response => response.json());
     }
 
     window.addEventListener(
         'load',
         function () {
+            let tabCount = 0;
 
             function createElement(element, attribute, inner) {
                 if (typeof(element) === "undefined") {
@@ -89,7 +90,17 @@
                 body.appendChild(tabStrip);
                 body.appendChild(tabContent);
 
+                const selectTab = function(name) {
+                    const tabItem = document.getElementById(`tab-${name}`);
+
+                    if (tabItem) {
+                        tabItem.click();
+                    }
+                };
+
                 const addTab = function(title, content, name) {
+                    tabCount++;
+
                     const tabStrip = document.getElementById(`simple-tournament-brackets-modal-navigation`);
                     const tabContent = document.getElementById(`simple-tournament-brackets-modal-content`);
                     const contentTarget = createElement(
@@ -103,21 +114,36 @@
                         content
                     );
 
+                    const tabItem = createElement(
+                        'li',
+                        {
+                            id: `tab-${name}`,
+                            role: 'tab',
+                            'aria-selected': 'false',
+                            'aria-controls': `panel-${name}`,
+                            tabindex: -1
+                        },
+                        title
+                    );
+
                     if (tabStrip && tabContent) {
-                        tabStrip.appendChild(
-                            createElement(
-                                'li',
-                                {
-                                    id: `tab-${name}`,
-                                    role: 'tab',
-                                    'aria-selected': 'false',
-                                    'aria-controls': `panel-${name}`,
-                                    tabindex: -1
-                                },
-                                title
-                            )
-                        );
+                        tabStrip.appendChild(tabItem);
                         tabContent.appendChild(contentTarget);
+
+                        tabItem.addEventListener('click', function(event) {
+                            [...tabStrip.children, ...tabContent.children].forEach((child) => {
+                                child.classList.remove('active');
+                            });
+                            tabItem.classList.add('active');
+                            contentTarget.classList.add('active');
+                        });
+                    }
+
+                    if (1 < tabCount) {
+                        tabStrip.style.display = 'block';
+                    } else {
+                        tabStrip.style.display = 'none';
+                        contentTarget.classList.add('active');
                     }
 
                     return contentTarget;
@@ -132,6 +158,7 @@
                     },
                     '\u00d7'
                 );
+
                 const modal = createElement(
                     'div',
                     {
@@ -150,27 +177,15 @@
                                 class: 'simple-tournament-brackets-modal-content',
                             },
                             [
-                                createElement(
-                                    'div',
-                                    {
-                                        class: 'simple-tournament-brackets-modal-header',
-                                    },
-                                    [
-                                        createElement(
-                                            'h3',
-                                            {
-                                                class: 'simple-tournament-brackets-modal-title',
-                                            },
-                                            title
-                                        ),
-                                        close
-                                    ]
-                                ),
+                                close,
                                 body
                             ]
                         )
                     )
                 );
+
+                modal['addTab'] = addTab.bind(modal);
+                modal['selectTab'] = selectTab.bind(modal);
 
                 window.addEventListener('click', (event) => {
                     if (event.target === modal) {
@@ -240,7 +255,7 @@
                         const two_name = tournament.competitors[two_id].name;
                         content += `<a href="#" class="advance-competitor" data-tournament-id="${tournament_id}" data-match-id="${match_id}" data-competitor-id="${two_id}" data-competitor-name="${two_name}">${options.language.advance.replace('{NAME}', two_name)}</a>`;
                     }
-                    if ( !is_first_round) {
+                    if (!is_first_round) {
                         content += `<a href="#" class="clear-competitors" data-tournament-id="${tournament_id}" data-match-id="${match_id}">${options.language.clear}</a>`;
 
                     }
@@ -251,42 +266,73 @@
                 return content;
             }
 
-            function renderMatch(tournament, tournament_id, match_id, flow, can_edit_matches) {
+            function intoMatchClass(tournament, match_id, round, byes) {
+                if (1 === round) return `no-match`;
+
+                if (2 === round) {
+                    let firstRoundMatches = Math.pow(2, tournament.rounds - 1);
+                    console.log(`first round matches is: ${firstRoundMatches}`);
+                    let currentRoundSpot = match_id - firstRoundMatches;
+                    console.log(`match_id: ${match_id}; spot: ${currentRoundSpot}`);
+                    let previousRoundUpMatchId = (currentRoundSpot * 2);
+                    let previousRoundBottomMatchId = (currentRoundSpot * 2) + 1;
+                    console.log(`up: ${previousRoundUpMatchId}; bottom: ${previousRoundBottomMatchId}`);
+                    console.log(byes);
+                    if (byes[previousRoundUpMatchId] && byes[previousRoundBottomMatchId]) {
+                        return `no-match`;
+                    } else if (byes[previousRoundUpMatchId]) {
+                        return `upper-bye`;
+                    } else if (byes[previousRoundBottomMatchId]) {
+                        return `lower-bye`;
+                    }
+                }
+
+                return `no-bye`;
+            }
+
+            function renderMatch(tournament, tournament_id, match_id, round, can_edit_matches, byes) {
                 let content = ``;
                 content += `<div class="simple-tournament-brackets-match">`;
-                content += `<div class="horizontal-line"></div>`;
-                content += `<div class="simple-tournament-brackets-match-body" data-match-id="${match_id}">`;
 
-                if (tournament.matches[match_id] && tournament.matches[match_id].one_id !== null) {
-                    const one_id = tournament.matches[match_id].one_id;
-                    const one_name = tournament.competitors[one_id] ? tournament.competitors[one_id].name : '&nbsp;';
-                    content += `<span class="simple-tournament-brackets-competitor competitor-${one_id}" data-competitor-id="${one_id}">${one_name}</span>`;
+                if (byes[match_id]) {
+                    content += `<div><div>&nbsp;</div><div>&nbsp;</div></div>`;
                 } else {
-                    content += `<span class="simple-tournament-brackets-competitor">&nbsp;</span>`;
-                }
+                    if (1 !== round) {
+                        content += `<div class="horizontal-line ${intoMatchClass(tournament, match_id, round, byes)}"></div>`;
+                    }
+                    content += `<div class="simple-tournament-brackets-match-body" data-match-id="${match_id}">`;
 
-                if (tournament.matches[match_id] && tournament.matches[match_id].two_id !== null) {
-                    const two_id = tournament.matches[match_id] ? tournament.matches[match_id].two_id : null;
-                    const two_name = tournament.matches[match_id] ? tournament.competitors[two_id].name : '&nbsp;';
-                    content += `<span class="simple-tournament-brackets-competitor competitor-${two_id}" data-competitor-id="${two_id}">${two_name}</span>`;
-                } else {
-                    content += `<span class="simple-tournament-brackets-competitor">&nbsp;</span>`;
-                }
-
-                content += `</div>`;
-
-                if (flow) {
-                    if (1 === match_id % 2) {
-                        content += `<div class="bottom-half">`;
+                    if (tournament.matches[match_id] && tournament.matches[match_id].one_id !== null) {
+                        const one_id = tournament.matches[match_id].one_id;
+                        const one_name = tournament.competitors[one_id] ? tournament.competitors[one_id].name : '&nbsp;';
+                        content += `<span class="simple-tournament-brackets-competitor competitor-${one_id}" data-competitor-id="${one_id}">${one_name}</span>`;
                     } else {
-                        content += `<div class="top-half">`;
+                        content += `<span class="simple-tournament-brackets-competitor">&nbsp;</span>`;
                     }
 
-                    if (can_edit_matches) {
-                        content += renderDropDown(tournament, tournament_id, match_id);
+                    if (tournament.matches[match_id] && tournament.matches[match_id].two_id !== null) {
+                        const two_id = tournament.matches[match_id] ? tournament.matches[match_id].two_id : null;
+                        const two_name = tournament.matches[match_id] ? tournament.competitors[two_id].name : '&nbsp;';
+                        content += `<span class="simple-tournament-brackets-competitor competitor-${two_id}" data-competitor-id="${two_id}">${two_name}</span>`;
+                    } else {
+                        content += `<span class="simple-tournament-brackets-competitor">&nbsp;</span>`;
                     }
 
                     content += `</div>`;
+
+                    if (round !== tournament.rounds) {
+                        if (1 === match_id % 2) {
+                            content += `<div class="bottom-half">`;
+                        } else {
+                            content += `<div class="top-half">`;
+                        }
+
+                        if (can_edit_matches) {
+                            content += renderDropDown(tournament, tournament_id, match_id);
+                        }
+
+                        content += `</div>`;
+                    }
                 }
                 content += `</div>`;
 
@@ -320,9 +366,9 @@
 
             function renderBrackets(tournament, container, tournament_id) {
                 let content = ``;
-                let numberOfGames;
                 let matchPaddingCount;
                 let rounds = filterRounds(options.language.rounds, tournament.rounds);
+                let byes = [];
 
                 content += `<div class="simple-tournament-brackets-round-header-container">`;
                 for (let i = 0; i <= tournament.rounds; i++) {
@@ -334,24 +380,29 @@
                 content += `<div class="simple-tournament-brackets-round-body-container">`;
                 let spot = 1;
                 let sumOfGames = 0;
+                let numberOfGames = Math.pow(2, Math.ceil(Math.log2(tournament.competitors.length)));
+
                 for (let round = 1; round <= tournament.rounds; round++) {
-                    numberOfGames = Math.ceil(tournament.competitors.length / (Math.pow(2, round)));
+                    numberOfGames = numberOfGames / 2;
                     matchPaddingCount = Math.pow(2, round) - 1;
 
                     content += `<div class="simple-tournament-brackets-round-body">`;
 
                     for (spot; spot <= (numberOfGames + sumOfGames); spot++) {
+                        byes[spot - 1] = tournament.matches[spot - 1] && (tournament.matches[spot - 1].status === 'tournament_bye');
+
                         for (let padding = 0; padding < matchPaddingCount; padding++) {
                             if (1 === spot % 2) {
                                 content += `<div class="match-half">&nbsp;</div> `;
                             } else {
-                                content += `<div class="vertical-line">&nbsp;</div> `;
+                                content += `<div class="vertical-line${byes[spot - 1] ? ' no-image' : ''}">&nbsp;</div> `;
                             }
                         }
-                        content += renderMatch(tournament, tournament_id, spot - 1, round !== tournament.rounds, options.can_edit_matches);
+                        content += renderMatch(tournament, tournament_id, spot - 1, round, options.can_edit_matches, byes);
                         for (let padding = 0; padding < matchPaddingCount; padding++) {
                             if ((round !== tournament.rounds) && (1 === spot % 2)) {
-                                content += `<div class="vertical-line">&nbsp;</div> `;
+                                console.log(`spot is ${spot}`);
+                                content += `<div class="vertical-line${byes[spot - 1] ? ' no-image' : ''}">&nbsp;</div> `;
                             } else {
                                 content += `<div class="match-half">&nbsp;</div> `;
                             }
@@ -427,12 +478,30 @@
                     );
             }
 
+
+            let newModal = createModal('simple-tournament-brackets-report-scores-modal', 'Match Details');
+            document.body.appendChild(newModal.modal);
+
             Array.from(document.getElementsByClassName('simple-tournament-brackets'))
                 .forEach(
                     (item) => {
-                        get_competitors(item.dataset.tournamentId)
+                        getCompetitors(item.dataset.tournamentId)
                             .then((response) => {
                                 renderBrackets(response.stb_match_data, item, item.dataset.tournamentId);
+
+                                Array.from(document.querySelectorAll(`#simple-tournament-brackets-${item.dataset.tournamentId} .dropdown-content`))////*[@id="simple-tournament-brackets-152"]/div[3]/div[1]/div[5]/div[3]/div
+                                    .forEach(
+                                        (item) => {
+                                            console.log(item);
+                                            item.addEventListener('click', () => {
+                                                item.classList.add('hide');
+                                            });
+
+                                            item.addEventListener('mouseleave', () => {
+                                                item.classList.remove('hide');
+                                            });
+                                        }
+                                    );
 
                                 const doneEvent = new CustomEvent("brackets.done", {
                                     bubbles: true,
@@ -446,7 +515,6 @@
                             });
                     }
                 );
-
         },
         false
     );

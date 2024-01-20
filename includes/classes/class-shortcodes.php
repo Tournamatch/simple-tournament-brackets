@@ -154,7 +154,8 @@ if ( ! class_exists( 'Shortcodes' ) ) {
 				}
 			);
 
-			$current_round_matches = count( $competitors ) / 2;
+			$total_rounds          = stb_total_rounds( count( $competitors ) );
+			$current_round_matches = pow( 2, $total_rounds - 1 );
 			$total_rounds          = $match_data['rounds'];
 			$match_count           = 0;
 			$match_id              = 0;
@@ -171,27 +172,30 @@ if ( ! class_exists( 'Shortcodes' ) ) {
 						$match_side = ( $spot & 1 ) ? 'two_id' : 'one_id';
 
 						if ( isset( $matches[ $next_match_id ] ) && isset( $matches[ $next_match_id ][ $match_side ] ) ) {
-							if ( $matches[ $match_id ]['one_id'] === $matches[ $next_match_id ][ $match_side ] ) {
+							if ( ( $matches[ $match_id ]['one_id'] === $matches[ $next_match_id ][ $match_side ] ) && isset( $matches[ $match_id ]['two_id'] ) ) {
 								/* translators: Both placeholders are competitor names. */
 								$matches[ $match_id ]['competitors'] = sprintf( __( '%1$s defeated %2$s', 'simple-tournament-brackets' ), esc_html( $competitors[ $matches[ $match_id ]['one_id'] ]['name'] ), esc_html( $competitors[ $matches[ $match_id ]['two_id'] ]['name'] ) );
-							} elseif ( $matches[ $match_id ]['two_id'] === $matches[ $next_match_id ][ $match_side ] ) {
+							} elseif ( ( $matches[ $match_id ]['two_id'] === $matches[ $next_match_id ][ $match_side ] ) && isset( $matches[ $match_id ]['one_id'] ) ) {
 								/* translators: Both placeholders are competitor names. */
 								$matches[ $match_id ]['competitors'] = sprintf( __( '%1$s lost to %2$s', 'simple-tournament-brackets' ), esc_html( $competitors[ $matches[ $match_id ]['one_id'] ]['name'] ), esc_html( $competitors[ $matches[ $match_id ]['two_id'] ]['name'] ) );
+							} else {
+								/* translators: A competitor name. */
+								$matches[ $match_id ]['competitors'] = sprintf( __( '%1$s advanced', 'simple-tournament-brackets' ), esc_html( $competitors[ $matches[ $next_match_id ][ $match_side ] ]['name'] ) );
 							}
 						} elseif ( isset( $matches[ $match_id ]['one_id'] ) && $matches[ $match_id ]['two_id'] ) {
 							/* translators: Both placeholders are competitor names. */
 							$matches[ $match_id ]['competitors'] = sprintf( __( '%1$s vs %2$s', 'simple-tournament-brackets' ), esc_html( $competitors[ $matches[ $match_id ]['one_id'] ]['name'] ), esc_html( $competitors[ $matches[ $match_id ]['two_id'] ]['name'] ) );
 						} elseif ( isset( $matches[ $match_id ]['one_id'] ) ) {
 							/* translators: A competitor name. */
-							$matches[ $match_id ]['competitors'] = sprintf( __( '%1$s opponent not yet decided.', 'simple-tournament-brackets' ), esc_html( $competitors[ $matches[ $match_id ]['one_id'] ]['name'] ) );
+							$matches[ $match_id ]['competitors'] = sprintf( __( '%1$s opponent not yet decided', 'simple-tournament-brackets' ), esc_html( $competitors[ $matches[ $match_id ]['one_id'] ]['name'] ) );
 						} elseif ( isset( $matches[ $match_id ]['two_id'] ) ) {
 							/* translators: A competitor name. */
-							$matches[ $match_id ]['competitors'] = sprintf( __( '%1$s opponent not yet decided.', 'simple-tournament-brackets' ), esc_html( $competitors[ $matches[ $match_id ]['two_id'] ]['name'] ) );
+							$matches[ $match_id ]['competitors'] = sprintf( __( '%1$s opponent not yet decided', 'simple-tournament-brackets' ), esc_html( $competitors[ $matches[ $match_id ]['two_id'] ]['name'] ) );
 						} else {
-							$matches[ $match_id ]['competitors'] = __( 'Match competitors not yet decided.', 'simple-tournament-brackets' );
+							$matches[ $match_id ]['competitors'] = __( 'Match competitors not yet decided', 'simple-tournament-brackets' );
 						}
 					} else {
-						$matches[ $match_id ]['competitors'] = __( 'Match competitors not yet decided.', 'simple-tournament-brackets' );
+						$matches[ $match_id ]['competitors'] = __( 'Match competitors not yet decided', 'simple-tournament-brackets' );
 					}
 
 					$match_id++;
